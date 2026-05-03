@@ -33,7 +33,9 @@ android {
 }
 
 dependencies {
+    implementation(libs.activity.ktx)
     implementation(libs.appcompat)
+    implementation(libs.firebase.firestore)
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)

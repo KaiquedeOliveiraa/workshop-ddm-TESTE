@@ -1,5 +1,6 @@
 package com.example.workshop_ddm_teste;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
@@ -25,7 +26,10 @@ public class MainActivity extends AppCompatActivity {
 
         // Se logar, avisa no log (ou muda de tela na Parte 2)
         vm.logado.observe(this, ok -> {
-            if (ok) Toast.makeText(this, "Logado!", Toast.LENGTH_SHORT).show();
+            if (ok) {
+                startActivity(new Intent(this, ListActivity.class));
+                finish();
+            }
         });
 
         findViewById(R.id.btnEntrar).setOnClickListener(v ->
