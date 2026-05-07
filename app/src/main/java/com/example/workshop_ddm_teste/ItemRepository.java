@@ -10,7 +10,6 @@ import java.util.Map;
 public class ItemRepository {
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
-
     private static final String COLECAO = "tarefas";
 
     public interface OnListListener {
@@ -23,18 +22,19 @@ public class ItemRepository {
         void onError(String erro);
     }
 
-    /** Busca todos os documentos e retorna uma lista de Strings (campo "nome"). */
+     //Busca os documentos da coleção no Firestore.
     public void buscarTodos(OnListListener listener) {
         db.collection(COLECAO)
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         List<String> lista = new ArrayList<>();
+
                         for (QueryDocumentSnapshot doc : task.getResult()) {
-                            // Adapte o campo conforme o seu modelo de dados
-                            String nome = doc.getString("nome");
+                            String nome = doc.getString("nome"); //
                             if (nome != null) lista.add(nome);
                         }
+
                         listener.onSuccess(lista);
                     } else {
                         listener.onError("Erro ao carregar a lista.");
@@ -42,7 +42,7 @@ public class ItemRepository {
                 });
     }
 
-    /** Adiciona um novo documento com o campo "nome". */
+     //Adiciona um novo documento na coleção "tarefas".
     public void adicionar(String nome, OnItemListener listener) {
         Map<String, Object> dados = new java.util.HashMap<>();
         dados.put("nome", nome);

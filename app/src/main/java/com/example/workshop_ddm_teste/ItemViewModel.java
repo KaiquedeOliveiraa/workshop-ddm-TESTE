@@ -5,17 +5,19 @@ import androidx.lifecycle.ViewModel;
 
 import java.util.List;
 
+//Faz a ponte entre a tela (ListActivity) e os dados (ItemRepository).
 public class ItemViewModel extends ViewModel {
 
     private final ItemRepository repository = new ItemRepository();
+    public MutableLiveData<List<String>>lista = new MutableLiveData<>();
+    public MutableLiveData<String>mensagem = new MutableLiveData<>();
+    public MutableLiveData<Boolean>carregando = new MutableLiveData<>();
 
-    public MutableLiveData<List<String>> lista   = new MutableLiveData<>();
-    public MutableLiveData<String>       mensagem = new MutableLiveData<>();
-    public MutableLiveData<Boolean>      carregando = new MutableLiveData<>();
+    //Solicita ao repositório a lista de tarefas do Firestore.
 
-    /** Carrega os itens do Firestore e publica no LiveData. */
     public void carregarLista() {
         carregando.setValue(true);
+
         repository.buscarTodos(new ItemRepository.OnListListener() {
             @Override
             public void onSuccess(List<String> itens) {
@@ -31,16 +33,18 @@ public class ItemViewModel extends ViewModel {
         });
     }
 
-    /** Adiciona um item e recarrega a lista em seguida. */
+    //valida e envia um novo item para o repositório salvar no Firestore.
+
     public void adicionarItem(String nome) {
         if (nome == null || nome.trim().isEmpty()) {
             mensagem.setValue("Digite um nome para o item.");
             return;
         }
+
         repository.adicionar(nome.trim(), new ItemRepository.OnItemListener() {
             @Override
             public void onSuccess() {
-                carregarLista(); // atualiza a lista automaticamente
+                carregarLista();
             }
 
             @Override
