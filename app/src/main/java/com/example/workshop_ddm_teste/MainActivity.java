@@ -10,6 +10,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.google.firebase.messaging.FirebaseMessaging;
+
 public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,6 +22,14 @@ public class MainActivity extends AppCompatActivity {
 
         EditText edEmail = findViewById(R.id.edEmail);
         EditText edSenha = findViewById(R.id.edSenha);
+
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        String token = task.getResult();
+                        Log.d("FCM", "Token: " + token);
+                    }
+                });
 
         // Se o ViewModel enviar mensagem, mostramos o Pop-up
         vm.mensagem.observe(this, msg -> Toast.makeText(this, msg, Toast.LENGTH_SHORT).show());
