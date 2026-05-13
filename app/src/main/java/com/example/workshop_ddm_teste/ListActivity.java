@@ -1,34 +1,27 @@
 package com.example.workshop_ddm_teste;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.ListView;
-import android.widget.Toast;
-import android.widget.ProgressBar;
 import android.view.View;
+import android.widget.ListView;
+import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.google.android.material.appbar.MaterialToolbar;
-import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
+import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 
-/**
- * Fluxo:
- *   ListActivity - solicita ao ViewModel
- *   ViewModel - chama o Repository
- *   Repository - busca no Firestore e responde via callback
- *   ViewModel - atualiza o LiveData
- *   ListActivity - é notificada automaticamente e atualiza a tela
- */
 public class ListActivity extends AppCompatActivity {
 
-    private ArrayAdapter<String> adapter;
-    private ArrayList<String> dados = new ArrayList<>();
+    private TarefaAdapter adapterPendentes;
+    private TarefaAdapter adapterConcluidas;
+    private ArrayList<Tarefa> dadosPendentes  = new ArrayList<>();
+    private ArrayList<Tarefa> dadosConcluidas = new ArrayList<>();
     private ItemViewModel vm;
 
     @Override
@@ -36,33 +29,65 @@ public class ListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list);
 
-        MaterialToolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        // Views
+        ProgressBar   progressBar    = findViewById(R.id.progressBar);
+        ListView      listPendentes  = findViewById(R.id.listViewPendentes);
+        ListView      listConcluidas = findViewById(R.id.listViewConcluidas);
+        MaterialButton btnNova       = findViewById(R.id.btnNovaTarefa);
 
-        ListView listView = findViewById(R.id.listView);
-        Button btnNova = findViewById(R.id.btnNovaTarefa);
-        ProgressBar progressBar2 = findViewById(R.id.progressBar);
+        // Data de hoje no header
+        android.widget.TextView txtDataHoje = findViewById(R.id.txtDataHoje);
+        Calendar cal = Calendar.getInstance();
+        String[] meses = {"Janeiro","Fevereiro","Março","Abril","Maio","Junho",
+                "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"};
+        String[] dias  = {"Domingo","Segunda","Terça","Quarta",
+                "Quinta","Sexta","Sábado"};
+        txtDataHoje.setText(dias[cal.get(Calendar.DAY_OF_WEEK) - 1] + ", " +
+                cal.get(Calendar.DAY_OF_MONTH) + " de " +
+                meses[cal.get(Calendar.MONTH)]);
 
-        // Adapter padrão do Android: vincula a lista "dados" ao ListView
-        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, dados);
-        listView.setAdapter(adapter);
+        // Listener compartilhado
+        TarefaAdapter.OnAcaoListener acaoListener = new TarefaAdapter.OnAcaoListener() {
+            @Override
+            public void onRemover(Tarefa tarefa) {
+                new AlertDialog.Builder(ListActivity.this)
+                        .setTitle("Remover tarefa")
+                        .setMessage("Deseja remover \"" + tarefa.nome + "\"?")
+                        .setPositiveButton("Remover", (d, w) -> vm.removerItem(tarefa.id))
+                        .setNegativeButton("Cancelar", null)
+                        .show();
+            }
+
+            @Override
+            public void onConcluir(Tarefa tarefa, boolean concluida) {
+                vm.alternarConcluida(tarefa.id, concluida);
+            }
+        };
+
+        adapterPendentes  = new TarefaAdapter(this, dadosPendentes,  acaoListener);
+        adapterConcluidas = new TarefaAdapter(this, dadosConcluidas, acaoListener);
+        listPendentes.setAdapter(adapterPendentes);
+        listConcluidas.setAdapter(adapterConcluidas);
 
         vm = new ViewModelProvider(this).get(ItemViewModel.class);
 
-        // Observa a lista de tarefas sempre que o ViewModel publicar novos dados
         vm.lista.observe(this, itens -> {
-            dados.clear();
-            dados.addAll(itens);
-            adapter.notifyDataSetChanged(); //
+            dadosPendentes.clear();
+            dadosConcluidas.clear();
+            for (Tarefa t : itens) {
+                if (t.concluida) dadosConcluidas.add(t);
+                else             dadosPendentes.add(t);
+            }
+            adapterPendentes.notifyDataSetChanged();
+            adapterConcluidas.notifyDataSetChanged();
         });
 
         vm.mensagem.observe(this, msg ->
                 Toast.makeText(this, msg, Toast.LENGTH_SHORT).show());
-        vm.carregando.observe(this, estaCarregando -> {
-            progressBar2.setVisibility(estaCarregando ? View.VISIBLE : View.GONE);
-        });
 
-        // abre a tela de adicionar nova tarefa
+        vm.carregando.observe(this, carregando ->
+                progressBar.setVisibility(carregando ? View.VISIBLE : View.GONE));
+
         btnNova.setOnClickListener(v ->
                 startActivity(new Intent(this, AddTaskActivity.class)));
 

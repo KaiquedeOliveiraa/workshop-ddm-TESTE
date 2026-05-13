@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingStart="16dp"
+    android:paddingEnd="12dp"
+    android:paddingTop="14dp"
+    android:paddingBottom="14dp"
+    android:background="?attr/selectableItemBackground">
+
+    <!-- Círculo para marcar como concluída -->
+    <ImageButton
+        android:id="@+id/btnConcluir"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:src="@drawable/ic_circle_outline"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:layout_marginEnd="14dp"
+        android:contentDescription="Marcar como concluída" />
+
+    <!-- Informações da tarefa -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/txtNomeTarefa"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:textColor="#1A1A2E" />
+
+        <TextView
+            android:id="@+id/txtDataHora"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            android:textColor="#9CA3AF"
+            android:layout_marginTop="2dp"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+    <!-- Botão excluir -->
+    <ImageButton
+        android:id="@+id/btnRemover"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:src="@drawable/ic_delete"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Remover tarefa" />
+
+</LinearLayout>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Círculo preenchido -->
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="#4F46E5" />
+            <size android:width="28dp" android:height="28dp" />
+        </shape>
+    </item>
+    <!-- Check branco no centro -->
+    <item
+        android:top="7dp"
+        android:bottom="7dp"
+        android:left="6dp"
+        android:right="6dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#00000000" />
+        </shape>
+    </item>
+</layer-list>

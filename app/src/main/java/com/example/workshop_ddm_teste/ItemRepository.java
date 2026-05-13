@@ -4,6 +4,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -13,7 +14,7 @@ public class ItemRepository {
     private static final String COLECAO = "tarefas";
 
     public interface OnListListener {
-        void onSuccess(List<String> itens);
+        void onSuccess(List<Tarefa> itens);
         void onError(String erro);
     }
 
@@ -22,19 +23,26 @@ public class ItemRepository {
         void onError(String erro);
     }
 
-     //Busca os documentos da coleção no Firestore.
     public void buscarTodos(OnListListener listener) {
         db.collection(COLECAO)
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        List<String> lista = new ArrayList<>();
-
+                        List<Tarefa> lista = new ArrayList<>();
                         for (QueryDocumentSnapshot doc : task.getResult()) {
-                            String nome = doc.getString("nome"); //
-                            if (nome != null) lista.add(nome);
+                            String  id        = doc.getId();
+                            String  nome      = doc.getString("nome");
+                            Boolean concluida = doc.getBoolean("concluida");
+                            String  dataHora  = doc.getString("dataHora");
+                            if (nome != null) {
+                                lista.add(new Tarefa(
+                                        id,
+                                        nome,
+                                        Boolean.TRUE.equals(concluida),
+                                        dataHora != null ? dataHora : ""
+                                ));
+                            }
                         }
-
                         listener.onSuccess(lista);
                     } else {
                         listener.onError("Erro ao carregar a lista.");
@@ -42,19 +50,35 @@ public class ItemRepository {
                 });
     }
 
-     //Adiciona um novo documento na coleção "tarefas".
-    public void adicionar(String nome, OnItemListener listener) {
-        Map<String, Object> dados = new java.util.HashMap<>();
-        dados.put("nome", nome);
+    public void adicionar(String nome, String dataHora, OnItemListener listener) {
+        Map<String, Object> dados = new HashMap<>();
+        dados.put("nome",      nome);
+        dados.put("concluida", false);
+        dados.put("dataHora",  dataHora != null ? dataHora : "");
 
         db.collection(COLECAO)
                 .add(dados)
                 .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        listener.onSuccess();
-                    } else {
-                        listener.onError("Não foi possível adicionar o item.");
-                    }
+                    if (task.isSuccessful()) listener.onSuccess();
+                    else listener.onError("Não foi possível adicionar o item.");
+                });
+    }
+
+    public void remover(String id, OnItemListener listener) {
+        db.collection(COLECAO).document(id)
+                .delete()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) listener.onSuccess();
+                    else listener.onError("Não foi possível remover o item.");
+                });
+    }
+
+    public void alternarConcluida(String id, boolean novoEstado, OnItemListener listener) {
+        db.collection(COLECAO).document(id)
+                .update("concluida", novoEstado)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) listener.onSuccess();
+                    else listener.onError("Não foi possível atualizar o item.");
                 });
     }
 }
